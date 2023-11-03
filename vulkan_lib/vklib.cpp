@@ -147,7 +147,7 @@ void vklib::createInstance(std::vector<const char*>& platformExtensions, std::ve
 	//createInfo.enabledExtensionCount = glfwExtensionCount;
 	//createInfo.ppEnabledExtensionNames = glfwExtensions;
 	
-	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
+	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
 	if (enableValidationLayers) {
 		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
 		createInfo.ppEnabledLayerNames = validationLayers.data();
@@ -178,7 +178,7 @@ void vklib::pickPhysicalDevice()
 
 void vklib::createLogicalDevice()
 {
-	VkDeviceQueueCreateInfo queueCreateInfo{};
+	VkDeviceQueueCreateInfo queueCreateInfo;
 	queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 	queueCreateInfo.queueFamilyIndex = vkPhysicalSelector::findQueueFamilies(physicalDevice);
 	queueCreateInfo.queueCount = 1;
@@ -186,9 +186,9 @@ void vklib::createLogicalDevice()
 	float queuePriority = 1.0f;
 	queueCreateInfo.pQueuePriorities = &queuePriority;
 
-	VkPhysicalDeviceFeatures deviceFeatures{};
+	VkPhysicalDeviceFeatures deviceFeatures;
 
-	VkDeviceCreateInfo createInfo{};
+	VkDeviceCreateInfo createInfo;
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 
 	createInfo.pQueueCreateInfos = &queueCreateInfo;
