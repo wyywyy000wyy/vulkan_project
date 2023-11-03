@@ -66,10 +66,10 @@ target_link_libraries(${CHAPTER_NAME} VulkanLib)
       
   endif ()
 set_target_properties (${CHAPTER_NAME} PROPERTIES CXX_STANDARD 17)
-link_directories(${GLFW3_LIB_PATH})
+# link_directories(${GLFW3_LIB_PATH})
 # link_libraries(${GLFW3_LIB_PATH})
 target_link_directories(${CHAPTER_NAME} PRIVATE ${GLFW3_LIB_PATH})
-target_link_libraries (${CHAPTER_NAME} Vulkan::Vulkan glfw3)
+# target_link_libraries (${CHAPTER_NAME} Vulkan::Vulkan glfw3)
 target_include_directories (${CHAPTER_NAME} PRIVATE ${SUB_PRJ_INCLUDE_DIRS} )
 
 if (DEFINED CHAPTER_SHADER)
@@ -94,12 +94,13 @@ endif ()
 
 
 
-set(SUB_PRJ_LINK_LIBS VulkanApp)
+set(SUB_PRJ_LINK_LIBS VulkanApp Vulkan::Vulkan glfw3)
 
 function(add_sub_prj SUB_PRJECT)
     get_filename_component(SUB_PRJECT_NAME ${SUB_PRJECT} NAME)
     file(GLOB_RECURSE SUB_PRJECT_SOURCES ${SUB_PRJECT}/*.cpp ${SUB_PRJECT}/*.h)
     add_executable(${SUB_PRJECT_NAME} ${SUB_PRJECT_SOURCES})
+    target_link_directories(${SUB_PRJECT_NAME} PRIVATE ${GLFW3_LIB_PATH})
     target_link_libraries(${SUB_PRJECT_NAME} ${SUB_PRJ_LINK_LIBS})
     target_include_directories(${SUB_PRJECT_NAME} PRIVATE ${SUB_PRJ_INCLUDE_DIRS})
 endfunction(add_sub_prj)
