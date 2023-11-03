@@ -5,7 +5,7 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
 
 # find_package (glm REQUIRED)
 find_package (Vulkan REQUIRED)
-find_package (tinyobjloader REQUIRED)
+# find_package (tinyobjloader REQUIRED)
 
 set(GLFW3_INCLUDE_PATH ${PROJECT_SOURCE_DIR}/dep/GLFW/include)
 set(GLFW3_LIB_PATH ${PROJECT_SOURCE_DIR}/dep/GLFW/lib)
@@ -39,7 +39,7 @@ cmake_parse_arguments (CHAPTER "" "SHADER" "LIBS;TEXTURES;MODELS" ${ARGN})
 
 add_subdirectory(vulkan_lib)
 
-set(SUB_PRJ_INCLUDE_DIRS ${STB_INCLUDEDIR} ${GLFW3_INCLUDE_PATH} ${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/vulkan_lib)
+set(SUB_PRJ_INCLUDE_DIRS ${STB_INCLUDEDIR} ${GLFW3_INCLUDE_PATH} ${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/vulkan_lib /usr/local/include)
 
 
 set(CHAPTER_NAME VulkanApp)
