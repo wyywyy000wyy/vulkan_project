@@ -8,7 +8,7 @@
 class vkPhysicalSelector
 {
 public:
-	static VkPhysicalDevice selectPhysicalDevice(VkInstance instance);
-
-	static uint32_t findQueueFamilies(VkPhysicalDevice device);
+	//static VkPhysicalDevice selectPhysicalDevice(VkInstance instance);
+    //static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
+	//static uint32_t findQueueFamilies(VkPhysicalDevice device);
 };

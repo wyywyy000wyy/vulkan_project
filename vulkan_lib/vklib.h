@@ -13,6 +13,16 @@ struct SwapChainSupportDetails {
 	std::vector<VkPresentModeKHR> presentModes;
 };
 
+struct QueueFamilyIndices {
+	uint32_t graphicsFamily = -1;
+	uint32_t presentFamily = -1;
+
+	bool isComplete() {
+		return graphicsFamily != -1 && presentFamily != -1;
+	}
+};
+
+
 class vklib
 {
 public:
@@ -25,6 +35,7 @@ public:
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 	VkDevice device;
 	VkQueue graphicsQueue;
+	VkQueue presentQueue;
 	VkSurfaceKHR surface;
 
 protected:
@@ -32,6 +43,9 @@ protected:
 	void setupDebugMessenger();
 	bool checkValidationLayerSupport();
 	void pickPhysicalDevice();
+	bool isDeviceSuitable(VkPhysicalDevice device);
+	VkPhysicalDevice selectPhysicalDevice(VkInstance instance);
+	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 	void createLogicalDevice();
 	std::vector<const char*> getRequiredExtensions();
 	virtual void createSurface() = 0;
