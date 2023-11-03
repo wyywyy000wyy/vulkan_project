@@ -1,5 +1,5 @@
 #pragma once
-#if !WIN32
+#if !WIN32 && !MACOSX
 #include <vulkan_wrapper.h>
 #else
 #include <vulkan/vulkan.h>
