@@ -131,28 +131,16 @@ void vklib::createInstance(std::vector<const char*>& platformExtensions, std::ve
 	appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
 	appInfo.apiVersion = VK_API_VERSION_1_2;
 	
-	std::vector<const char *> instanceExt(getRequiredExtensions());
-	instanceExt.insert(instanceExt.end(), platformExtensions.begin(), platformExtensions.end());
-	  //instanceExt.push_back("VK_KHR_surface");
-	  //instanceExt.push_back("VK_KHR_android_surface");
-
-	VkInstanceCreateInfo createInfo = {};
+	VkInstanceCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &appInfo;
-	createInfo.enabledLayerCount = 0;
-	createInfo.ppEnabledLayerNames = nullptr;
-	createInfo.enabledExtensionCount =  static_cast<uint32_t>(instanceExt.size());
-	createInfo.ppEnabledExtensionNames = instanceExt.data();
 
-	uint32_t glfwExtensionCount = 0;
-	const char** glfwExtensions;
-	
-	//glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-	//
-	//createInfo.enabledExtensionCount = glfwExtensionCount;
-	//createInfo.ppEnabledExtensionNames = glfwExtensions;
-	
-	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
+	auto extensions = getRequiredExtensions();
+	extensions.insert(extensions.end(), platformExtensions.begin(), platformExtensions.end());
+	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+	createInfo.ppEnabledExtensionNames = extensions.data();
+
+	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
 	if (enableValidationLayers) {
 		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
 		createInfo.ppEnabledLayerNames = validationLayers.data();
@@ -166,13 +154,9 @@ void vklib::createInstance(std::vector<const char*>& platformExtensions, std::ve
 		createInfo.pNext = nullptr;
 	}
 
-	
 	if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
-		VK_LOG_ERROR("Tutorial01 failed to create instance!");
-		throw std::runtime_error("Tutorial01 failed to create instance!");
+		throw std::runtime_error("failed to create instance!");
 	}
-
-
 }
 
 
