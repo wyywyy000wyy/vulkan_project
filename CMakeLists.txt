@@ -3,7 +3,7 @@ project (VulkanProject)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
 
-find_package (glm REQUIRED)
+# find_package (glm REQUIRED)
 find_package (Vulkan REQUIRED)
 find_package (tinyobjloader REQUIRED)
 
