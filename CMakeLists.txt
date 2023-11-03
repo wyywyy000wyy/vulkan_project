@@ -7,8 +7,15 @@ set(CMAKE_CXX_STANDARD 11)
 find_package (Vulkan REQUIRED)
 # find_package (tinyobjloader REQUIRED)
 
+if (APPLE)
+set(GLFW3_INCLUDE_PATH ${PROJECT_SOURCE_DIR}/dep/glfw_mac/include)
+set(GLFW3_LIB_PATH ${PROJECT_SOURCE_DIR}/dep/glfw_mac/lib)
+else()
 set(GLFW3_INCLUDE_PATH ${PROJECT_SOURCE_DIR}/dep/GLFW/include)
 set(GLFW3_LIB_PATH ${PROJECT_SOURCE_DIR}/dep/GLFW/lib)
+endif()
+
+
 set(STB_INCLUDEDIR ${PROJECT_SOURCE_DIR}/dep/stb_image.h)
 
 add_executable (glslang::validator IMPORTED)
@@ -39,7 +46,7 @@ cmake_parse_arguments (CHAPTER "" "SHADER" "LIBS;TEXTURES;MODELS" ${ARGN})
 
 add_subdirectory(vulkan_lib)
 
-set(SUB_PRJ_INCLUDE_DIRS ${STB_INCLUDEDIR} ${GLFW3_INCLUDE_PATH} ${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/vulkan_lib /usr/local/include)
+set(SUB_PRJ_INCLUDE_DIRS ${STB_INCLUDEDIR} ${GLFW3_INCLUDE_PATH} ${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/vulkan_lib /usr/local/include )
 
 
 set(CHAPTER_NAME VulkanApp)
