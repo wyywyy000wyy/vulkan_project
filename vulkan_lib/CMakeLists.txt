@@ -4,8 +4,8 @@ set(TARGET_NAME VulkanLib)
 add_library(${TARGET_NAME} STATIC ${SOURCES})
 if (WIN32)
 find_package (Vulkan REQUIRED)
-target_include_directories(${TARGET_NAME} PRIVATE
-/usr/local/include)
+include_directories(SYSTEM /usr/local/include)
+
 target_link_libraries (${TARGET_NAME} Vulkan::Vulkan)
 set_target_properties (${TARGET_NAME} PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${TARGET_NAME})
