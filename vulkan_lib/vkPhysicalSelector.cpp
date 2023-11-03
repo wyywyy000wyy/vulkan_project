@@ -65,14 +65,14 @@ VkPhysicalDevice vkPhysicalSelector::selectPhysicalDevice(VkInstance instance)
 
 	std::vector<VkPhysicalDevice> devices(deviceCount);
 	vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
-	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+	VkPhysicalDevice physicalDevice = nullptr;
 	for (const auto& device : devices) {
 		if (isDeviceSuitable(device)) {
 			physicalDevice = device;
 			break;
 		}
 	}
-	if (physicalDevice == VK_NULL_HANDLE)
+	if (physicalDevice == nullptr)
 		throw std::runtime_error("failed to find a suitable GPU!");
 
 	return physicalDevice;
