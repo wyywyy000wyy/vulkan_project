@@ -39,7 +39,7 @@ cmake_parse_arguments (CHAPTER "" "SHADER" "LIBS;TEXTURES;MODELS" ${ARGN})
 
 add_subdirectory(vulkan_lib)
 
-set(SUB_PRJ_INCLUDE_DIRS ${STB_INCLUDEDIR} ${GLFW3_INCLUDE_PATH} ${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/vulkan_lib /usr/local/include/vulkan)
+set(SUB_PRJ_INCLUDE_DIRS ${STB_INCLUDEDIR} ${GLFW3_INCLUDE_PATH} ${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/vulkan_lib /usr/local/include)
 
 
 set(CHAPTER_NAME VulkanApp)
