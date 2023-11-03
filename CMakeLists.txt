@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.8)
 project (VulkanProject)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
-
+set(CMAKE_CXX_STANDARD 11)
 # find_package (glm REQUIRED)
 find_package (Vulkan REQUIRED)
 # find_package (tinyobjloader REQUIRED)

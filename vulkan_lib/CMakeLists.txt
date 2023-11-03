@@ -1,5 +1,6 @@
 
 file(GLOB_RECURSE SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
+set(CMAKE_CXX_STANDARD 11)
 set(TARGET_NAME VulkanLib)
 find_package (Vulkan REQUIRED)
 include_directories(SYSTEM /usr/local/include)
