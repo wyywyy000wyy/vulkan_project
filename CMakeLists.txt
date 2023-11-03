@@ -9,7 +9,7 @@ find_package (Vulkan REQUIRED)
 
 if (APPLE)
 set(GLFW3_INCLUDE_PATH ${PROJECT_SOURCE_DIR}/dep/glfw_mac/include)
-set(GLFW3_LIB_PATH ${PROJECT_SOURCE_DIR}/dep/glfw_mac/lib)
+set(GLFW3_LIB_PATH ${PROJECT_SOURCE_DIR}/dep/glfw_mac/lib-universal)
 else()
 set(GLFW3_INCLUDE_PATH ${PROJECT_SOURCE_DIR}/dep/GLFW/include)
 set(GLFW3_LIB_PATH ${PROJECT_SOURCE_DIR}/dep/GLFW/lib)
