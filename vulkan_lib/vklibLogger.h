@@ -1,5 +1,6 @@
 #pragma once
 #include <sstream>
+#include <iostream>
 #include <string>
 
 class vklibLogger
@@ -32,3 +33,16 @@ void printArgs(std::stringstream& ss, T first, Args... args) {
 #define VK_LOG_ERROR(...) FOMATION_LOG_STRING(LogError, __VA_ARGS__)
 
 extern vklibLogger* logger;
+
+
+#define VK_CALL(VK_CALL, ...) \
+{ \
+	VkResult result = VK_CALL(__VA_ARGS__); \
+	if (result != VK_SUCCESS) { \
+		VK_LOG_ERROR("****************************");\
+		VK_LOG_ERROR("Vulkan call ",#VK_CALL," failed: ",  result); \
+		VK_LOG_ERROR("****************************");\
+		throw std::runtime_error("Vulkan call failed: " ); \
+	} \
+	VK_LOG("Vulkan call ",#VK_CALL ," success!")\
+}

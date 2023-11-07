@@ -2,7 +2,9 @@ cmake_minimum_required (VERSION 3.8)
 project (VulkanProject)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 # find_package (glm REQUIRED)
 find_package (Vulkan REQUIRED)
 # find_package (tinyobjloader REQUIRED)
@@ -94,6 +96,40 @@ endif ()
 
 
 
+
+set(LIB_ASSET_PATH ${CMAKE_CURRENT_SOURCE_DIR}/vulkan_lib/assets)
+set(LIB_SHADER_PATH ${LIB_ASSET_PATH}/shaders)
+file (GLOB LIB_SHADER_SOURCES ${LIB_SHADER_PATH}/*.frag ${LIB_SHADER_PATH}/*.vert)
+message(***************)
+message(${LIB_ASSET_PATH})
+foreach(SHADER_SOURCE ${LIB_SHADER_SOURCES})
+    message(${SHADER_SOURCE})
+endforeach()
+message(***************)
+
+
+set(LIB_ASSET_DIR ${CMAKE_BINARY_DIR}/assets)
+set(LIB_SHADER_DIR ${LIB_ASSET_DIR}/shaders)
+
+message(${LIB_SHADER_DIR})
+
+function (add_shaders_target2 TARGET)
+    add_custom_command (
+        OUTPUT ${LIB_SHADER_DIR}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${LIB_SHADER_DIR}
+        )
+    add_custom_command (
+            OUTPUT ${LIB_SHADER_DIR}/frag.spv ${LIB_SHADER_DIR}/vert.spv
+            COMMAND glslang::validator
+            ARGS --target-env vulkan1.0 ${LIB_SHADER_SOURCES} --quiet
+            WORKING_DIRECTORY ${LIB_SHADER_DIR}
+            DEPENDS ${LIB_SHADER_DIR} ${LIB_SHADER_SOURCES}
+            COMMENT "Compiling Shaders"
+            VERBATIM
+            )
+    add_custom_target (${TARGET} DEPENDS ${LIB_SHADER_DIR}/frag.spv ${LIB_SHADER_DIR}/vert.spv)
+endfunction()
+
 set(SUB_PRJ_LINK_LIBS VulkanApp Vulkan::Vulkan glfw3)
 
 function(add_sub_prj SUB_PRJECT)
@@ -103,6 +139,10 @@ function(add_sub_prj SUB_PRJECT)
     target_link_directories(${SUB_PRJECT_NAME} PRIVATE ${GLFW3_LIB_PATH})
     target_link_libraries(${SUB_PRJECT_NAME} ${SUB_PRJ_LINK_LIBS})
     target_include_directories(${SUB_PRJECT_NAME} PRIVATE ${SUB_PRJ_INCLUDE_DIRS})
+
+    set (CHAPTER_SHADER_TARGET ${SUB_PRJECT_NAME}_shader)
+    add_shaders_target2(${CHAPTER_SHADER_TARGET})
+    add_dependencies(${SUB_PRJECT_NAME} ${CHAPTER_SHADER_TARGET})
 endfunction(add_sub_prj)
 
 file(GLOB SUB_PRJECTS ${PROJECT_SOURCE_DIR}/prj/*)
