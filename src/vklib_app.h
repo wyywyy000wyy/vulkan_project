@@ -8,6 +8,7 @@ public:
 	vklib_app(uint32_t width, uint32_t height);
 
 	void run();
+	vklib* vklib;
 protected:
 	virtual void init();
 	virtual void loop();
@@ -18,5 +19,4 @@ protected:
 	GLFWwindow* window;
 	uint32_t WIDTH;
 	uint32_t HEIGHT;
-	vklib* vklib;
 };

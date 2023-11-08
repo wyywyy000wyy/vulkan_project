@@ -46,3 +46,14 @@ extern vklibLogger* logger;
 	} \
 	VK_LOG("Vulkan call ",#VK_CALL ," success!")\
 }
+
+#define VK_CALL2(VK_CALL, ...) \
+{ \
+	VkResult result = VK_CALL(__VA_ARGS__); \
+	if (result != VK_SUCCESS) { \
+		VK_LOG_ERROR("****************************");\
+		VK_LOG_ERROR("Vulkan call ",#VK_CALL," failed: ",  result); \
+		VK_LOG_ERROR("****************************");\
+		throw std::runtime_error("Vulkan call failed: " ); \
+	} \
+}

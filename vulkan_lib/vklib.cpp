@@ -8,6 +8,9 @@
 #include <GLFW/glfw3.h>
 #endif
 
+const int MAX_FRAMES_IN_FLIGHT = 2;
+
+
 const std::vector<const char*> validationLayers = {
 	"VK_LAYER_KHRONOS_validation"
 };
@@ -89,6 +92,10 @@ void vklib::initVulkan(std::vector<const char*>& platformExtensions, std::vector
 	createImageViews();
 	createRenderPass();
 	createGraphicsPipeline();
+	createFramebuffers();
+	createCommandPool();
+	createCommandBuffers();
+	createSyncObjects();
 }
 
 bool vklib::checkValidationLayerSupport() {
@@ -594,8 +601,194 @@ void vklib::createGraphicsPipeline()
 	VK_CALL(vkCreateGraphicsPipelines, device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline);
 }
 
-void vklib::cleanup()
+void vklib::createFramebuffers()
 {
+	swapChainFramebuffers.resize(swapChainImageViews.size());
+
+	for (size_t i = 0; i < swapChainFramebuffers.size(); ++i)
+	{
+		VkImageView attachments[] = { swapChainImageViews[i] };
+
+		VkFramebufferCreateInfo framebufferInfo{};
+		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;//VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO
+		framebufferInfo.renderPass = renderPass;//renderPass
+		framebufferInfo.attachmentCount = 1;//0
+		framebufferInfo.pAttachments = attachments;//nullptr
+		framebufferInfo.width = swapChainExtent.width;//swapChainExtent.width
+		framebufferInfo.height = swapChainExtent.height;//swapChainExtent.height
+		framebufferInfo.layers = 1;//1
+
+		VK_CALL(vkCreateFramebuffer, device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]);
+	}
+}
+
+void vklib::createSurface()
+{}
+
+void vklib::createCommandPool()
+{
+	QueueFamilyIndices queueFamilyIndices = findQueueFamilies(physicalDevice);
+
+	VkCommandPoolCreateInfo poolInfo{};
+	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;//VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO
+	poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily;//queueFamilyIndices.graphicsFamily
+
+	VK_CALL(vkCreateCommandPool, device, &poolInfo, nullptr, &commandPool);
+}
+
+void vklib::createCommandBuffers()
+{
+	commandBuffers.resize(swapChainFramebuffers.size());
+
+	VkCommandBufferAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;//VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO
+	allocInfo.commandPool = commandPool;//commandPool
+	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;//VK_COMMAND_BUFFER_LEVEL_PRIMARY
+	allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();//commandBuffers.size()
+
+	VK_CALL(vkAllocateCommandBuffers, device, &allocInfo, commandBuffers.data());
+
+
+	for (size_t i = 0; i < commandBuffers.size(); ++i)
+	{
+		VkCommandBufferBeginInfo beginInfo{};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;//VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO
+		VK_CALL(vkBeginCommandBuffer, commandBuffers[i], &beginInfo);
+
+		VkRenderPassBeginInfo renderPassInfo{};
+		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;//VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO
+		renderPassInfo.renderPass = renderPass;//renderPass
+		renderPassInfo.framebuffer = swapChainFramebuffers[i];//swapChainFramebuffers[i]
+		renderPassInfo.renderArea.offset = { 0, 0 };//{ 0, 0 }
+		renderPassInfo.renderArea.extent = swapChainExtent;//swapChainExtent
+
+		VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
+		renderPassInfo.clearValueCount = 1;//1
+		renderPassInfo.pClearValues = &clearColor;//&clearColor
+
+		vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);//VK_SUBPASS_CONTENTS_INLINE
+		{
+			vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);//VK_PIPELINE_BIND_POINT_GRAPHICS
+			vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);//3, 1, 0, 0
+		}
+		vkCmdEndRenderPass(commandBuffers[i]);
+
+		VK_CALL(vkEndCommandBuffer, commandBuffers[i])
+	}
+}
+
+void vklib::createSyncObjects()
+{
+	imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+	renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+	inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+	imagesInFlight.resize(swapChainImages.size(), VK_NULL_HANDLE);
+
+	VkSemaphoreCreateInfo semaphoreInfo{};
+	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;//VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO
+
+	VkFenceCreateInfo fenceInfo{};
+	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;//VK_STRUCTURE_TYPE_FENCE_CREATE_INFO
+	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;//VK_FENCE_CREATE_SIGNALED_BIT
+
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
+	{
+		VK_CALL2(vkCreateSemaphore, device, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]);
+		VK_CALL2(vkCreateSemaphore, device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]);
+		VK_CALL2(vkCreateFence, device, &fenceInfo, nullptr, &inFlightFences[i]);
+	}
+}
+
+void vklib::draw()
+{
+	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);//UINT64_MAX
+
+	uint32_t imageIndex;
+	VK_CALL2(vkAcquireNextImageKHR, device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);//UINT64_MAX
+
+	if (imagesInFlight[imageIndex] != VK_NULL_HANDLE)
+	{
+		vkWaitForFences(device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);//UINT64_MAX
+	}
+	imagesInFlight[imageIndex] = inFlightFences[currentFrame];
+
+	VkSubmitInfo submitInfo{};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+	VkSemaphore waitSemaphores[] = { imageAvailableSemaphores[currentFrame] };
+	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+	submitInfo.waitSemaphoreCount = 1;
+	submitInfo.pWaitSemaphores = waitSemaphores;
+	submitInfo.pWaitDstStageMask = waitStages;//waitStages
+
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffers[imageIndex];//&commandBuffers[imageIndex]
+
+	VkSemaphore signalSemaphores[] = { renderFinishedSemaphores[currentFrame] };
+	submitInfo.signalSemaphoreCount = 1;//1
+	submitInfo.pSignalSemaphores = signalSemaphores;//signalSemaphores
+
+	vkResetFences(device, 1, &inFlightFences[currentFrame]);//inFlightFences[currentFrame]
+
+	VK_CALL2(vkQueueSubmit, graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]);//inFlightFences[currentFrame]
+
+	VkPresentInfoKHR presentInfo{};
+	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;//VK_STRUCTURE_TYPE_PRESENT_INFO_KHR
+
+	presentInfo.waitSemaphoreCount = 1;//1
+	presentInfo.pWaitSemaphores = signalSemaphores;//signalSemaphores
+
+	VkSwapchainKHR swapChains[] = { swapChain };//swapChain
+	presentInfo.swapchainCount = 1;//1
+	presentInfo.pSwapchains = swapChains;//swapChains
+
+	presentInfo.pImageIndices = &imageIndex;//&imageIndex
+
+
+	VkResult result = vkQueuePresentKHR(presentQueue, &presentInfo);//&presentInfo
+	//VK_CALL2(vkQueuePresentKHR, presentQueue, &presentInfo);//&presentInfo
+	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized)
+	{
+		framebufferResized = false;
+		recreateSwapChain();
+	}
+	else if (result != VK_SUCCESS)
+	{
+		VK_LOG_ERROR("failed to present swap chain image!");
+		throw std::runtime_error("failed to present swap chain image!");
+	}
+	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;//MAX_FRAMES_IN_FLIGHT
+
+}
+
+void vklib::windSizeChanged()
+{
+	framebufferResized = true;
+}
+
+void vklib::recreateSwapChain()
+{
+	vkDeviceWaitIdle(device);
+
+	cleanupSwapChain();
+
+	createSwapChain();
+	createImageViews();
+	createRenderPass();
+	createGraphicsPipeline();
+	createFramebuffers();
+	createCommandBuffers();
+
+	imagesInFlight.resize(swapChainImages.size(), VK_NULL_HANDLE);
+}
+
+void vklib::cleanupSwapChain() {
+	for (auto framebuffer : swapChainFramebuffers) {
+		vkDestroyFramebuffer(device, framebuffer, nullptr);
+	}
+
+	vkFreeCommandBuffers(device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+
 	vkDestroyPipeline(device, graphicsPipeline, nullptr);
 	vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 	vkDestroyRenderPass(device, renderPass, nullptr);
@@ -605,6 +798,20 @@ void vklib::cleanup()
 	}
 
 	vkDestroySwapchainKHR(device, swapChain, nullptr);
+}
+
+void vklib::cleanup()
+{
+	cleanupSwapChain();
+
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
+		vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
+		vkDestroyFence(device, inFlightFences[i], nullptr);
+	}
+
+	vkDestroyCommandPool(device, commandPool, nullptr);
+
 	vkDestroyDevice(device, nullptr);
 	if (enableValidationLayers)
 		DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);

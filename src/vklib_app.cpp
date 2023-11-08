@@ -85,15 +85,24 @@ void vklib_app::init()
     vklib->initVulkan(extensions, deviceExtensions);
 }
 
+static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
+    auto app = reinterpret_cast<vklib_app*>(glfwGetWindowUserPointer(window));
+    app->vklib->windSizeChanged();
+}
+
 void vklib_app::initWindow() {
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    //glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
     window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
+    glfwSetWindowUserPointer(window, this);
+    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 }
 
 void vklib_app::loop()
 {
+	vklib->draw();
 }
 
 void vklib_app::cleanup()
