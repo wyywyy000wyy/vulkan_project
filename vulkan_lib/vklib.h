@@ -1,11 +1,6 @@
 #pragma once
-#if __ANDROID__
-#include <vulkan_wrapper.h>
-#else
-#include <vulkan/vulkan.h>
-#endif
+#include "vklib_require.h"
 #include <vector>
-#include "vklibLogger.h"
 
 struct SwapChainSupportDetails {
 	VkSurfaceCapabilitiesKHR capabilities;
@@ -60,6 +55,17 @@ public:
 	bool framebufferResized = false;
 	void windSizeChanged();
 	void draw();
+	void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+	void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+
+	VkDescriptorSetLayout descriptorSetLayout;
+	std::vector<VkBuffer> uniformBuffers;
+	std::vector<VkDeviceMemory> uniformBuffersMemory;
+	VkDescriptorPool descriptorPool;
+	std::vector<VkDescriptorSet> descriptorSets;
+
+
+	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 protected:
 	void createInstance(std::vector<const char*>& platformExtensions, std::vector<const char*>& platformDeviceExtensions);
 	void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
@@ -73,6 +79,7 @@ protected:
 	std::vector<const char*> getRequiredExtensions();
 	virtual void createSurface();
 	void createSwapChain();
+	void createSwapChainList();
 	SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
 	VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 	VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes);
@@ -82,6 +89,16 @@ protected:
 	void createRenderPass();
 	void createGraphicsPipeline();
 	void createFramebuffers();
+
+	/// <summary>
+	/// UniformBuffer
+	/// </summary>
+	void createUniformBuffers();
+	void updateUniformBuffer(uint32_t currentImage);
+	void createDescriptorSetLayout();
+	void createDescriptorPool();
+	void createDescriptorSets();
+
 	void createCommandPool();
 	void createCommandBuffers();
 	void createSyncObjects();
